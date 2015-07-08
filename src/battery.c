@@ -116,12 +116,12 @@ bool ACPI_init( )
 	{
 		
 		name = batt->d_name;
-		/* jump . and .. */
-		if (!strncmp (".", name, 1) || !strncmp ("..", name, 2))
-			continue;
-		
-		countBattery++;
-		
+       /* keeps only BAT* from power_supply */
+       if (!strncmp ("BAT", name, 3))
+         countBattery++;
+       else
+         continue;
+
 		/* adding a battery to powerState vector */
 		if( mallocBatteryVector( ) == ERROR )
 			return ERROR;
@@ -131,16 +131,15 @@ bool ACPI_init( )
 		/* we can find 'status' or even 'state' */
 		snprintf( path, 52, "%s/%s/status", ACPI_BATTERY_DIR, name );
 		if (access(path, R_OK) == SUCCESS )
-			snprintf( batPtr -> stateFile, 52, "%s/%s/status",ACPI_BATTERY_DIR, name );
+		    snprintf( batPtr -> stateFile, 52, "%s/%s/uevent",ACPI_BATTERY_DIR, name );
 		else
-			snprintf( batPtr -> stateFile, 52, "%s/%s/state", ACPI_BATTERY_DIR, name );
-		
+	        snprintf( batPtr -> stateFile, 52, "%s/%s/status", ACPI_BATTERY_DIR, name );	
 		
 		/* calculating maximum capacity of this battery
 		 * reading file infos */
 		batPtr -> useLFC = ACPI_lfcArgs_get( countBattery );
 		batPtr -> counter = countBattery;
-		snprintf( batPtr -> infoFile, 52, "%s/%s/info", ACPI_BATTERY_DIR, name );
+		snprintf( batPtr -> infoFile, 52, "%s/%s/uevent", ACPI_BATTERY_DIR, name );
 		batPtr -> present = ACPI_maxCapacity ( batPtr );
 		
 		/* THIS IS NOT A BATTERY ! set error field to true: don't use it */
@@ -198,31 +197,39 @@ bool ACPI_maxCapacity ( battery p )
 	ptr = buf;
 	while( (!dcTagPointer || !lfcTagPointer) && saltCounter < 492 )
 	{
-		if( !strncmp( ptr, "design capacity:", 16 ) )
-			dcTagPointer = ptr;
-		if( !strncmp( ptr, "last full capacity:", 19 ) )
-			lfcTagPointer = ptr;
-		
-		saltCounter++;
-		ptr++;
-	}
+
+     if( !strncmp( ptr, "POWER_SUPPLY_CHARGE_FULL_DESIGN=", 32 ) )
+       dcTagPointer = ptr;
+
+     else if( !strncmp( ptr, "POWER_SUPPLY_ENERGY_FULL_DESIGN=", 32 ) )
+       dcTagPointer = ptr;
+
+
+     if( !strncmp( ptr, "POWER_SUPPLY_CHARGE_FULL=", 25 ) )
+       lfcTagPointer = ptr;
+     else if ( !strncmp( ptr, "POWER_SUPPLY_ENERGY_FULL=", 25 ) )
+       lfcTagPointer = ptr;
+
+     saltCounter++;
+     ptr++;
+    }
 	
 	
 	/* naah.. */
 	if( saltCounter >= 492 && !dcTagPointer && !lfcTagPointer )
 	{
-		PRINTQ( stderr, "The info file (%s) has not \n'design capacity' and not event 'last full capacity' tag\n%s\n", p -> infoFile, errorMessage );
+		PRINTQ( stderr, "The uevent file (%s) has not \n'FULL_DESIGN' and not event 'FULL' tag\n%s\n", p -> infoFile, errorMessage );
 		/* we treat 1111.1111.1111.1111 as error here */
 		p -> capacity =  ~0x00;
 	}
 	
 	if( lfcTagPointer ) {
-		lfcTagPointer += 20;
+		lfcTagPointer += 25;
 		sscanf( lfcTagPointer, "%u", &lastFullCapacity );
 	}
 	
 	if( dcTagPointer ) {
-		dcTagPointer += 17;
+		dcTagPointer += 32;
 		sscanf( dcTagPointer, "%u", &designCapacity );
 	}
 	
@@ -233,8 +240,8 @@ bool ACPI_maxCapacity ( battery p )
 	{
 		if( p -> useLFC == false )
 		{
-			PRINTQ( stderr, "'Last full capacity' in <%s>\n", p -> infoFile );
-			PRINTQ( stderr, "is different from 'design capacity' tag:\n" );
+            PRINTQ( stderr, "'FULL_DESIGN' in <%s>\n", p -> infoFile );
+            PRINTQ( stderr, "is different from 'FULL' tag:\n" );
 			PRINTQ( stderr, "If you want to use it pass '--lfc=%d' (%d is the number of this battery)\n", p -> counter, p -> counter );
 			PRINTQ( stderr, "If you don't want this message to be displayed anymore pass '-q'\n\n" );
 		}
@@ -315,21 +322,23 @@ bool ACPI_Filler ( battery bat )
 			return ERROR;
 		}
 		
-		ptr = buf;
-		while( strncmp( ptr, "remaining capacity:", 19 ) && saltCounter < 495)
+ 		ptr = buf;
+        while( strncmp( ptr, "POWER_SUPPLY_CHARGE_NOW=", 24 ) 
+               && strncmp( ptr, "POWER_SUPPLY_ENERGY_NOW=", 24 ) 
+              && saltCounter < 495)
 		{
 			saltCounter++;
-			ptr++;
+			*ptr++;
 		}
 		
 		/* naah.. */
 		if( saltCounter >= 498 )
 		{
-			fprintf( stderr, "The info file (%s) has not 'remaining capacity' tag", path );
+			fprintf( stderr, "The uevent file (%s) has not 'NOW' tag", path );
 			free_and_exit( ERROR );
 		}
 		
-		ptr += 20;
+		ptr += 24;
 		
 		sscanf( ptr, "%u", &bat -> actualState );
 	}
@@ -368,25 +377,27 @@ void ACPI_Update ( )
 	/* battery charger information reading
 	 * thanks to wmpower */
 	
-	if (!(fp = fopen ("/proc/acpi/ac_adapter/0/status", "r")))
-		if (!(fp = fopen ("/proc/acpi/ac_adapter/ACAD/state", "r")))
-			if (!(fp = fopen ("/proc/acpi/ac_adapter/AC/state", "r")))
-				if (!(fp = fopen ("/proc/acpi/ac_adapter/ADP1/state", "r")))
-					return;
+    if (!(fp = fopen ("/sys/class/power_supply/AC/online", "r")))
+      if (!(fp = fopen ("/sys/class/power_supply/ADP1/online", "r")))
+        return;
 	
 	fread_unlocked (buf, 512, 1, fp);
 	fclose(fp);
 	
 	if (strncmp(buf, "state:",  6) == 0)
-		where = buf + 26;
-	if (strncmp(buf, "Status:", 7) == 0)
-		where = buf + 26;
+		where = buf;
+    if (strncmp(buf, "0", 1) == 0)
+        where = buf;
+    if (strncmp(buf, "1", 1) == 0)
+        where = buf;
+ 
+
 	
 	if (where)
 	{
-		if (where[0] == 'n')
+		if (where[0] == '1')
 			powerState.isCharging = true;
-		if (where[0] == 'f')
+		if (where[0] == '0')
 			powerState.isCharging = false;
 	}
 	

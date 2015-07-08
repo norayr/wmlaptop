@@ -196,7 +196,8 @@ void scalingGovernorHelper( )
 {
     char * scaling_governor_path = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor";
     char * scaling_governor_av_path = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors";
-    char * error_msg = "Unable to read <%s>:\n%s\nwmlaptop cannot help you in cpu scaling governor\n";
+    char * error_msg = "Unable to read <%s>\n";
+    char * error_msg_w = "Unable to write <%s>\n";
     FILE * sysfp;
     FILE * sysavfp;
     char   littleBuffer[128];
@@ -213,8 +214,10 @@ void scalingGovernorHelper( )
     fclose( sysfp );
     
     if( !strcmp( littleBuffer, "userspace\n" ) )
+       {
+   cpuState.userspace = true;
         return;
-
+       }
     if( ( sysavfp = fopen( scaling_governor_av_path, "r" ) ) == NULL ) {
         PRINTQ( stderr, error_msg, scaling_governor_av_path, strerror(errno) );
         return;
@@ -228,34 +231,26 @@ void scalingGovernorHelper( )
         {
             /* ok, module is loaded */
             printIt = true;
+			cpuState.userspace = true;
             break;
         }
 
 
     if( printIt == false ) {
         int s;
-        PRINTQ( stderr, "It seems that you do not have 'cpufreq_userspace' module loaded in your kernel\n");
-        PRINTQ( stderr, "I try to call \"/sbin/modprobe cpufreq_userspace\"\n");
-
-        /* ugly.. but very fast */
-        s = system( "/sbin/modprobe cpufreq_userspace" );
-
-        if( s == 0 )
-            PRINTQ( stderr, "..good.\n" );
-        else
-        {
-            PRINTQ( stderr, "you should do it by yourself (maybe you need to recompile kernel ?)\n");
-            return;
-        }
+        PRINTQ( stderr, "It seems that 'userspace' governor is not set\n");
+        PRINTQ( stderr, "wmlaptop may not control CPU frequency\n");       
+  cpuState.userspace = false;
     }
     
     /* All ok here */
     if( ( sysfp = fopen( scaling_governor_path, "w" )) == NULL ) 
-        PRINTQ( stderr, error_msg, scaling_governor_path, strerror(errno));
+	    PRINTQ( stderr, error_msg_w, scaling_governor_path, strerror(errno));
     else
     {
         PRINTQ( stderr, "echoing 'userspace' > '%s'\n", scaling_governor_path );
         fprintf( sysfp, "userspace" );
+		cpuState.userspace = true;
         fclose( sysfp );
     }
 
@@ -271,7 +266,7 @@ void init_cpuState ( )
 #ifndef LONGRUN
 	FILE *  fp;
 	char red[10];
-	char * paths[3][3] =
+	char * paths[4][3] =
 	          { /* sys     proc    user */
 	/* min */   { "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq",
 	              "/proc/sys/cpu/0/speed-min",
@@ -281,7 +276,10 @@ void init_cpuState ( )
 	              args_useFileMax },
 	/* set */   { "/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed",
 	              "/proc/sys/cpu/0/speed",
-	              args_useFileSet }
+			      args_useFileSet },
+   /* read */  { "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq",
+             "/proc/sys/cpu/0/speed",
+             args_useFileSet }
 	          };
 	u_int8 idx[3] = {   /* the second index */
 	     args_useFileMin ? 2 : ( args_useSysProc == USESYSPROC_SYS ? 0 : 1 ),
@@ -292,7 +290,9 @@ void init_cpuState ( )
 	
 	/* auto_freq_state */
 	cpuState.auto_freq_state = ( args_autoFreq == AUTOFREQ_ON );
-	
+
+    /* will be checked later */
+    cpuState.userspace = false;
 	
 	/* min freq */
 	if( (fp = fopen( paths[0][idx[0]], "r" )) == NULL ) {
@@ -318,7 +318,8 @@ void init_cpuState ( )
 	
 	/* set freq file */
 	cpuState.setFreqFile = paths[2][idx[2]];
-
+    /* read freq file */
+    cpuState.readFreqFile = paths[3][idx[2]];
         /* if we have to use the SYS's way to set cpufreq, then ensure that in
          * scaling_governor there has been put 'userspace'; otherwise let's try
          * to put it by ourself */

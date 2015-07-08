@@ -24,11 +24,8 @@
 /*******************
  * ACPI FEATURES   *
  *********************************************************************************/
-//#define    ACPI_ACCESS_TEST      "/proc/acpi/info"
-#define    ACPI_ACCESS_TEST      "/proc/acpi"
-#define    ACPI_BATTERY_DIR      "/proc/acpi/battery"
-//TODO #define    ACPI_BATTERY_DIR      "/home/mtc/hisBattery/battery"
-
+#define    ACPI_ACCESS_TEST      "/sys/module/acpi/parameters/acpica_version"
+#define    ACPI_BATTERY_DIR      "/sys/class/power_supply"
 
 /* it increments, mallocing, the powerState.batteryVector size, to enable
  * it to contain another set of battery's information. */

@@ -88,8 +88,8 @@ int main( int argc, char * argv[] )
 	
 	if( powerState.nBatt == 0 ) {
 		fprintf( stderr, "No batteries found !\n");
-		fprintf( stderr, "(I only can search in /proc/acpi/battery/* and in /proc/apm)\n");
-		free_and_exit( ERROR );
+        fprintf( stderr, "(I only can search in /sys/class/power_supply/* and in /proc/apm)\n");
+        /*      free_and_exit( ERROR ); */
 	}
 	else
     if( args_ttyMode == false )

@@ -135,9 +135,11 @@ void cpuReadFreq( )
 	char red[10];
 	
 	//if( (fp = fopen( cpuState.setFreqFile, "r" )) == NULL )
-	if( (fp = fopen( cpuState.setFreqFile[0], "r" )) == NULL )
+	//if( (fp = fopen( cpuState.setFreqFile[0], "r" )) == NULL )
+	if( (fp = fopen( cpuState.readFreqFile, "r" )) == NULL )
 	{
-		fprintf(stderr, "Error reading the info file (%s):\n%s\n", cpuState.setFreqFile, strerror(errno) );
+		//fprintf(stderr, "Error reading the info file (%s):\n%s\n", cpuState.setFreqFile, strerror(errno) );
+		fprintf(stderr, "Error reading the info file (%s):\n%s\n", cpuState.readFreqFile, strerror(errno) );
 		free_and_exit( ERROR );
 	}
 	
@@ -198,7 +200,19 @@ void cpuSetFreq( bool direction, bool speed )
 	if(( direction == FREQ_INCREMENT && cpuState.actualFreq == cpuState.maxFreq ) ||
 	   ( direction == FREQ_DECREMENT && cpuState.actualFreq == cpuState.minFreq ))
 		return;
-	
+    /* if not userspace, forget about it */
+    if (! cpuState.userspace)
+      return;
+    /* check we got the permissions */
+    if( (fopen( cpuState.setFreqFile, "w" )) == NULL )
+      {
+        fprintf(stderr, "Sorry, you may need priviledge to access into (%s):\n%s\n", \
+            cpuState.setFreqFile, strerror(errno) );
+        cpuState.userspace = false;
+        return;
+      }
+ 
+
 	switch( speed )
 	{
 		case FREQ_STEP:
@@ -318,9 +332,10 @@ void cpuEchoFreq()
 #ifndef LONGRUN	
 	if( (fp = fopen( cpuState.setFreqFile, "w" )) == NULL )
 	{
-		fprintf(stderr, "Error writing the new freq (%d) in the file (%s):\n%s\n", \
+		fprintf(stderr, "Error, cannot write the new freq (%d) into (%s):\n%s\n", \
 		                cpuState.setFreq, cpuState.setFreqFile, strerror(errno) );
 		free_and_exit( ERROR );
+		return;
 	}
 	
 	fprintf( fp, "%u", cpuState.setFreq );

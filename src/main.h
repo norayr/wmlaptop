@@ -222,6 +222,8 @@ struct cpuFreq
 	u_int32 minFreq;
 	u_int32 maxFreq;
 	char *  setFreqFile;
+    char *  readFreqFile;
+    bool userspace;
 	u_int32 setFreq;
 	u_int32 stepFreq;
 #else
