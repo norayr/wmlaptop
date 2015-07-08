@@ -1,0 +1,33 @@
+First of all, many thanks to other coders from which
+wmlaptop has taken some part of its own code
+
+Thanks to Zinx Verituse for writing "fireload_cpu.c" in
+his "wmfire" dockapp.
+
+Thanks to Michele Noberasco for writing apm and acpi 
+battery access in his "wmpower" dockapp. More exactly:
+thanks to Costantino Pistagna for writing acpi part
+in "wmacpimon", and to Filippo Panessa for apm part
+in "wmab" (according to Noberasco's files)
+
+At the end, thanks to my beautiful, first laptop,
+(an ACER TravelMate 291LCi) which moves me to write this
+dockapp; thanks to Paolo Attivissimo (www.attivissimo.net)
+for some WindowsXp's License hits; and thanks to Linux
+and all Open Source Community, to have opened my mind
+
+----------
+
+To anyone who have sent me a report, a suggestion, or
+(specially) a patch. Hence..
+
+Thanks to James Woodard to give me some suggestion
+Thanks to Bernd Pommerehne for helping me to understanding
+a strange behaviour of the dockapp
+Thanks to Daniel Winkler to have sent me a patch which has
+brought wmlaptop from 1.1 to 1.2 (see the changelog)
+Thanks to Adrian Robert to have written the support for
+Longrun Transmeta Cpu and have sent me a completly well 
+functioning patch
+Thanks to Dino Ghilardi to have suggested another skin for
+wmlaptop

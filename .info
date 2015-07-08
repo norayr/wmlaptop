@@ -1,0 +1,62 @@
+#!/bin/bash
+
+
+echo
+echo WmLaptop is now installed on your system
+echo type wmlaptop --help for a details on its functions
+echo
+
+cd /sys/devices/system/cpu/cpu0/cpufreq >& /dev/null
+
+if [ $? -eq 0 ]; then
+
+	GOV=`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor`
+
+	if [ "$GOV" != "userspace" ]; then
+
+		echo
+		echo It seems you have kernel 2.6 series. To enable cpu 
+		echo frequency scaling on /sys directory, don\'t forget
+		echo to enable the \"userspace governor\" before starting
+		echo the dockapp
+		echo
+		
+		POS=`grep userspace /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors &> /dev/null`
+		FOUND=$?
+
+		if [ $FOUND -eq 0 ]; then
+			echo You can do this by typing:
+			echo "echo userspace > cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+			echo BEFORE starting wmalptop. From version 1.3, wmlaptop will do it by itself
+			echo
+		else
+			echo WARNING: you don\'t seem to have \"userspace governor\" available
+			echo on this kernel configuration. If you have built it as a module, wmlaptop
+            echo will try to load it when it starts. If you didn\'t build it, maybe you
+            echo need to recompile the kernel
+			echo
+		fi
+	fi
+fi
+
+which sudo >& /dev/null
+
+if [ $? -eq 0 ]; then
+
+	echo
+	echo To enable wmlaptop to call /bin/shutdown as normal user, you have to
+	echo tell to sudo that a normal user can run the shutdown binary.
+	echo
+	echo You can do this by adding this line to /etc/sudoers file:
+	echo myLoginName ALL=\(root\) NOPASSWD: /sbin/shutdown
+	echo
+	echo where myLoginName is the normal user login name.
+	echo
+else
+	echo
+	echo You don\'t seem to have sudo on your path. Read the README file to 
+	echo understand who to use the auto shutdown with wmlaptop
+	echo
+fi
+
+

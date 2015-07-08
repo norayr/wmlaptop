@@ -1,0 +1,159 @@
+wmlaptop 1.1 - 25 Gennaio 2004
+
+tutto cio' che vi serve se avete un portatile compresso in una piccola
+applicazione da 64x64 :)
+
+-- Hai fretta ? leggi qui sotto.
+
+INSTALLAZIONE:
+
+riferirsi al file INSTALL
+
+wmlaptop e' ora installato nel vostro sistema !
+
+-- Cos'e' wmlaptop ?
+
+wmlaptop e' una dockapp di WindowMaker che include tutto cio' di cui ha bisogno
+un utente linux con un portatile. I piu' acuti avranno indovinato che wmlaptop
+include una avanzata interfaccia informativa riguardo lo stato della/e
+batteria/e, con stima del tempo residuo di carica. ma questa e' solo una delle
+utili funzioni fornite da wmlaptop:
+
+
+* Stima del tempo residuo di carica della batteria
+* Supporto multi batteria
+* Indicatore batteria residua (visuale e in percentuale)
+* Frequency Scaling automatico (in base al carico)
+* Frequency Scaling manuale
+* 0-100 indicatore carico della cpu
+* Supporto per APM e ACPI
+* Supporto per sysfs e /proc filesystem
+* Pienamente compatibile con la serie 2.6 del kernel
+* Supporto visuale per piu' batterie
+* Allarme "video e audio" per batteria scarica
+* Auto shutdown con batteria scarica
+* Screen saver attivabile con pulsante destro del mouse
+* Eseguibile da console
+* Supporto per Longrun Transmeta Cpu
+
+
+
+-- Ho notato indicatori di batteria in altri programmi, ma cos'e' il Frequency
+Scaling automatico ? Il mio portatile e' supportato ?
+
+Auto-Freq attivato significa che quando il carico della cpu e' al massimo, la
+frequenza del processore e' automaticamente incrementata fino a raggiungere la
+frequenza massima. quando il carico della cpu ritorna ad un basso livello,
+la frequenza e' decrementata fino al minimo.
+questa caratteristica e' utile in particolar modo nei portatili, poiche' in
+questo modo si puo' risparmiare la batteria, ma utilizzare il processore alla
+massima potenza quando necessario. per attivare o disattivare questa funzione,
+basta cliccare con il tasto sinistro sul rettangolo centrale AUTO-FREQ.
+
+wmlaptop e' stato ispirato da un nuovo notebook Intel Centrino (Pentium-M),
+che comprende la tecnologia Enhanced SpeedStep dell'Intel. I processori
+Pentium-M sono percio' pienamente supportati. anche i Pentium III o gli AthlonXP
+hanno il supporto per il frequency scaling, controllate le vostre impostazioni
+nel kernel ed eventualmente ricompilatelo.
+ATTENZIONE: è NECESSARIO avere "userspace governor" abilitato sul kernel 2.6
+Se avete un kernel che usa sia performance che userspace, assicuratevi di
+abilitare l'userspace governor prima di far partire wmlaptop. Per farlo è
+sufficiente digitare questo comando:
+echo userspace > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+[wmlaptop è disegnata solo per usare una cpu]
+
+-- Il tempo residuo di carica non funziona ! cio' che vedo e' 00:00 !
+
+al momento in cui entra in funzione la batteria, non e' possibile stimare subito
+il tempo residuo, ma bisogna aspettare circa un paio di minuti perche' la stima
+sia accettabilmente precisa. l'indicatore mostrera' 00:00 per un po', per poi
+lasciar posto ad un tempo in ore e minuti che indichera' l'autonomia.
+questa stima sara' tanto piu' raffinata quanto piu' tempo passera' dal momento
+in cui il portatile e' alimentato soltanto a batteria. Piu precisament, con un
+esempio:
+
+Stato della
+Batteria
+
+86%       <- wmlaptop non è partito
+ .
+ .        <- fai partire wmlaptop quando hai 86%. wmlaptop mostra "--:--"
+ .
+ .
+85%       <- passando da 86% a 85% wmlaptop comincia a contare i secondi
+ .           e ancora mostra "--:--"
+ .
+ .
+ .
+84%       <- wmlaptop ora sa quanto tempo è passato per ridurre la batteria di
+             un punto percentuale, e può provare a fare una stima del tempo
+             rimasto (ora mostra qualcosa diverso da --:--)
+
+
+-- Ci sono dei settaggi particolari che dovrei impostare ?
+
+prima di dare il comando 'make', e' possibile editare il file MODIFY_ME, (ovvero
+src/argsConfig.h); al suo interno ci sono dei parametri di default per wmlaptop.
+se non vi va di cambiarli da qui, potete farlo da riga di comando, all'avvio
+della dockapp.
+
+
+INTERFACCIA:
+
+                                  +-------------+
+percentuale batteria rimasta -->  | 58%   02:27 |  <-- tempo residuo stimato
+       alimentatore inserito -->  | -< ||||||   |  <-- grafico batteria rimasta
+                                  |-------------|
+                                  | cpuload   0 |  <-- carico della cpu
+                                  | [AUTO-FREQ] |  <-- frequency-scaling auto-
+                                  |-------------|      matico attivo/disattivo
+    decrementa frequenza cpu -->  | < 1 4 0 0 > |  <-- incrementa frequenza cpu
+                                  +-------------+
+                                      ^^^^^^^
+                            attuale frequenza della cpu
+
+
+QUALCHE NUOVA FUNZIONE DALLA VERSIONE 1.1::
+
+	- è possibile cliccare con il tasto destro sulla dockapp:
+	  in questo modo sarà attivato lo screensaver
+	- quando lo stato della batteria è al 100% e il carica batteria è
+	  inserito, la frequenza verrà settata al massimo (questo comportamento
+	  è controllabile dall'argomento --paradisiac)
+	- è possibile usare 'last full capacity' invece di 'design capacity' se
+	  questi valori sono differenti (nell'analisi della batteria)
+	- è possibile far spengere correttamente il computer a wmlaptop ad una
+	  prescelta percentuale di batteria: per fare questo bisogna modificare
+	  il file /etc/sudoers (e avere sudo installato)
+	- è possibile far suonare un allarme di batteria scarica con 4 divertenti
+	  jinlges: il campanello che si sente su una puntata dei simpson ;P, una
+	  ambulanza, vittoria, e bip alti
+
+E' tutto gente ! Divertitevi con il vostro portatile e con wmlaptop !
+
+
+/**************************************************************************/
+/*                                                                        */
+/*  A PARTIRE DALLA VERSIONE 1.4 WMLAPTOP SUPPORTA LONGRUN TRANSMETA CPU  */
+/*                        grazie a Adrian Robert                          */
+/*                                                                        */
+/**************************************************************************/
+Riferirsi al file CHANGELOG per saperne di più.
+Per abilitare il supporto Longrun è necessario compilare wmlaptop utilizzando
+il file Makefile.Longrun, quindi rimpiazzare il comando per compilare "make"
+con "make -f Makefile.Longrun". 
+
+
+
+CONTATTA GLI AUTORI:
+
+- Giacomo Galilei (codice e un pochino di grafica)
+matic _at_ libero _dot_ it
+
+- Lorenzo Marcon (grafica e un pochino di codice)
+stclaus _at_ libero _dot_ it
+
+Perugia (Italy), December 23, 2003
+
+Questo progetto e' rilasciato sotto licenza GNU GPL
+Leggi LICENSE per avere piu' informazioni

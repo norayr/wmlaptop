@@ -1,0 +1,16 @@
+#!/bin/bash
+
+nBuild=`cat version.h | grep BUILD_NR | head -n 1 | tr -s ' ' | cut -d ' ' -f 3`
+
+newBuild=$[$nBuild+1]
+
+cat << EOF > version.h
+#ifndef __VERSION_H__
+#define __VERSION_H__
+
+#define    BUILD_NR       $newBuild
+#define    PROGNAME       "WmLaptop"
+#define    VERSION        "1.4"
+
+#endif
+EOF

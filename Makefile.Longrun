@@ -1,0 +1,35 @@
+# modify this if you want/need
+
+INSTALLDIR = /usr/local/bin/
+CC = gcc
+
+LIBDIR = -L/usr/X11R6/lib
+LIBS   = -lXpm -lXext -lX11 
+CFLAGS =  -O2 -Wall -DLONGRUN
+# -DDEBUG
+OBJS   =  main.o init.o event.o draw.o battery.o cpu.o autoscript.o pixmap.o longrun_linux.o
+EXE    = wmlaptop
+
+
+export INSTALLDIR
+export LIBDIR
+export LIBS
+export CFLAGS
+export OBJS
+export EXE
+export CC
+
+all:
+	cd src && make
+
+clean:
+	cd src && make clean
+
+install:
+	cd src && make install
+	./.info
+
+uninstall:
+	cd src && make uninstall
+
+reall: clean all

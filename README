@@ -1,0 +1,177 @@
+wmlaptop 1.4 - 11 set 2004
+
+all that you need if you have a laptop shrinked in a 64x64 small application :)
+
+-- Are you in a hurry ? read below.
+
+INSTALLING:
+
+refer to INSTALL file
+
+wmlaptop is now installed on your system!
+
+-- What is wmlaptop ?
+
+wmlaptop is a WindowMaker dockapp that includes all that a linux user with a
+laptop needs. The smartests should have guess that wmlaptop includes an advanced
+battery information interface, with an estimated battery duration time
+indicator. but that's only one of the useful fuctions provided by wmlaptop:
+
+
+* Battery estimated time remaining
+* Multi Batteries support
+* Battery remaining charge (visual and percent)
+* Auto-Frequency Scaling
+* Manual Frequency Scaling
+* 0-100 Cpu Load indicator
+* APM and ACPI support
+* sysfs and /proc filesystems support
+* Kernel 2.6 series fully compatible
+* Visual support for multiple batteries
+* "Visual and audio" alarm on Low-Battery
+* Auto shutdown on Low-Battery
+* Easy screen saver starter
+* Console executable
+* Longrun Transmeta Cpu support
+
+
+
+-- I have seen battery indicators in other apps, but what is Auto-Freqency
+Scaling ? Is my laptop supported ?
+
+Auto-Frequency turned on means that when cpuload is at its maximum, processor
+frequency is automatically increased until it reaches the max frequency.
+when cpuload returns to a low level, the frequency is decreased until min
+frequency.
+this feature is useful for laptops in particular, because you can save much
+battery charge, but use all the power of your processor when needed.
+to toggle this feature on and off, simply left-clic the central rectangle with
+AUTO-FREQ written inside.
+
+wmlaptop was inspired by a new Intel Centrino (Pentium-M) laptop, which comes
+with Enhanced SpeedStep Technology from Intel. So Pentium-M processors are fully
+supported. Also Pentium III and Athlon XP have frequency scaling support, check
+your kernel settings and eventually recompile it.
+WARNING: having "userspace governor" enabled on kernel 2.6 is a MUST.
+If you have a kernel which use both performance and userspace, ensure to enable
+the userspace governor before start wmlaptop. To do this you need to type this:
+echo userspace > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+[wmlaptop is design to use only one cpu]
+
+
+-- The battery estimated charge time doesn't work ! I see a 00:00 !
+
+is impossibile to estimate this value at the moment when the laptop is alimented
+only with battery; we must wait a few minutes for the value to be more accurate.
+the indicator will show --:-- for a little bit, and then it will show a hour and
+minutes time that indicates laptop battery remaining time. this value will be
+more accurate more is the time passed from the moment when the laptop goes only
+with battery. Extactly, with an example:
+
+
+Battery
+State
+
+86%       <- wmlaptop is not running
+ .
+ .        <- you run wmlaptop when you have 86% and it shows you "--:--"
+ .
+ .
+85%       <- you pass from 86% to 85%. wmlaptop starts to count
+ .           the time, it still shows you "--:--"
+ .
+ .
+ .
+84%       <- wmlaptop now knows how many time is passed for a
+             "one point percentage reduction" and it is able to
+             try a first estimation of remaining time (now it must
+             shows you something)
+
+
+-- Are there special settings that I should set ?
+
+before 'make', you can edit MODIFY_ME file (src/argsConfig.h); in it there are
+some default wmlaptop's behaviours and parameters. if you don't like this way,
+don't worry! you can change these parameters from the command line, when you
+start the dockapp.
+
+
+
+INTERFACE:
+
+                                  +-------------+
+   left battery's percentage -->  | 58%   02:27 |  <-- remaining time
+       adapter AC plugged in -->  | -< ||||||   |  <-- left battery's graphic
+                                  |-------------|
+                                  | cpuload   0 |  <-- cpu's load
+                                  | [AUTO-FREQ] |  <-- automatic frequency-
+                                  |-------------|      scaling ON/OFF
+   decrement cpu's frequency -->  | < 1 4 0 0 > |  <-- increment cpu's frequency
+                                  +-------------+
+                                      ^^^^^^^
+                               actual cpu's frequency
+
+
+HERE SOME NEW FEATURE FROM THE 1.1 VERSION:
+
+	- by clicking with right mouse button over
+	  the dockapp, is possible to start the screen saver
+	- when the battery state is at 100% and the AC_Adapter is plugged in
+	  the frequency will be set to maximum (enabled by --paradisiac arg)
+	- you can use 'last full capacity' instead of 'design capacity' if
+	  these values are different (in the battery's analysis)
+	- you can now shutdown the system at prearranged battery percentage
+	  to do this you have to edit /etc/sudoers (and have sudo installed)
+	- you can play an "LOW BATTERY" alarm at prearranged battery percentage
+	  with 4 funny jingles: simpson's bell, ambulance, victory, high beeps
+
+
+That's all, folks ! Enjoy with your laptop and much more with wmlaptop !
+
+
+
+/**************************************************************************/
+/*                                                                        */
+/*     SINCE VERSION 1.4 WMLAPTOP SUPPORTS LONGRUN TRANSMETA CPU          */
+/*                        thanks to Adrian Robert                         */
+/*                                                                        */
+/**************************************************************************/
+		
+	  Implemented support for Transmeta CPUs with Longrun capability.  On these
+	  systems you set a range of frequencies (actually "performance levels") and
+	  the system will automatically adjust within the range based on CPU load
+	  (like the auto-freq function but hundreds of times per second).  The
+	  support works as follows:
+
+	  - The arrows shift the maximum performance level up and down by one unit.
+		The minimum always stays at 0 (which is equivalent to, e.g., 300 MHz on a
+		1 GHz CPU).
+	  - If "auto-freq" is turned on, the range is set to (0, max), otherwise it
+		is set to (max, max).
+	  - Theoretically code could be added to adjust the shift size based on
+		right-clicks on the arrows, but with only 5 levels typical on a CPU, this
+		isn't a high priority.
+	  - On startup, the setting is set to 0,current, current,current depending on
+		auto-freq state, where min or max is used in place of current if min or
+		max setting is requested.  Note that this and subsequent adjustments may
+		not interact well with other processes or daemons adjusting longrun state,
+		such as an acpid script.
+	
+To enable the Longrun support you need to compile wmlaptop using the file
+Makefile.Longrun; to do so, use "make -f Makefile.Longrun" instead of the
+simple "make"
+
+
+
+CONTACT THE AUTHORS:
+
+- Giacomo Galilei (code and a bit of graphics)
+matic _at_ libero _dot_ it
+
+- Lorenzo Marcon (graphics and a bit of code)
+stclaus _at_ libero _dot_ it
+
+Perugia (Italy), December 24, 2003
+
+This project is released under GNU GPL license
+See LICENSE for more information

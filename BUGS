@@ -1,0 +1,51 @@
+version 1.4:
+the shutdown support could have some problem due to this fact: some batteries
+when are running low just jump from (i.e.) 5% to 0% (my battery does this).
+And so, if you have set the auto shutdown when battery is at (i.e.) 3%, wmlaptop
+wont never shutdown the system.. 
+
+version 1.3:
+maybe APM support has been improved. I would like to recieve comments by
+apm'users on it. Cpu goes in paradisiac mode even when wmlaptop starts at
+100%
+
+
+version 1.2:
+the "floating point exception" is now handled, but unfortunately the behaviour
+is not properly fixed, just patched: the division by zero is not performed
+anymore, to disadvantage of estimated time: this will be set to 0
+the bug which shows a wrong percentage when more batteries are plugged in has
+been solved by Daniel Winkler
+
+
+the version 1.1 is released without lot of tests: this means that there could
+be some bug here in there :P. An isolated undocument bug has been reported
+from a user of 1.01, which tell us that he recieve an "floating point exception"
+signal which kill the application. We are not sure to have resolve this bug with
+the 1.1 version.
+
+
+We ask you to send to the authors the report of every bug you found, and if the
+message of exit is one of the system message (like "segmentation fault" or
+"floating point exception", we ask you to send the core.dump file too please. To
+enable the core.dump creation, you have to type "ulimit -c unlimited" before
+starting the application )
+
+Before submitting any bugs, please remember to check you are using the last
+version of wmlaptop (downloadable here -> wmlaptop.sourceforge.net), and 
+remember this:
+
+to use wmlaptop frequency scaling with /sys/ directory, you have to enable
+the "userspace governor" in the kernel configuration.
+
+the use of wmlaptop with cpufreqd is known to give some problems.. please don't
+use both at the same time.
+
+
+Thanks in advance to every bug reporters
+and thanks to:
+Adrian Robert
+Bernd Pommerehne
+Daniel Winkler
+James Woodard
+for their contribute.

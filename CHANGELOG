@@ -1,0 +1,161 @@
+11-09-2004 - Version 1.4 - Adrian Robert, Dino Ghilardi, Giacomo Galilei
+
+	* Added:
+		Makefile.Longrun src/longrun.h src/lungrun_linux.c, src/longrun_freebsd.c
+	  Updated:
+		src/main.h src/cpu.c src/init.c src/event.c
+		
+	  Implemented support for Transmeta CPUs with Longrun capability.  On these
+	  systems you set a range of frequencies (actually "performance levels") and
+	  the system will automatically adjust within the range based on CPU load
+	  (like the auto-freq function but hundreds of times per second).  The
+	  support works as follows:
+
+	  - The arrows shift the maximum performance level up and down by one unit.
+		The minimum always stays at 0 (which is equivalent to, e.g., 300 MHz on a
+		1 GHz CPU).
+	  - If "auto-freq" is turned on, the range is set to (0, max), otherwise it
+		is set to (max, max).
+	  - Theoretically code could be added to adjust the shift size based on
+		right-clicks on the arrows, but with only 5 levels typical on a CPU, this
+		isn't a high priority.
+	  - On startup, the setting is set to 0,current, current,current depending on
+		auto-freq state, where min or max is used in place of current if min or
+		max setting is requested.  Note that this and subsequent adjustments may
+		not interact well with other processes or daemons adjusting longrun state,
+		such as an acpid script.
+	
+	* src/main.c
+	  fixed bug whereby don't-blink setting in argsConfig.h was being ignored.
+
+	* src/main.c src/main.h src/event.c src/battery.c
+	  added cpuUpdate and batteryUpdate options/defaults so update rates can be
+	  configured.
+
+	* src/pixmap.c 
+	  is now possible to choose among 3 type of skin
+
+11-05-2004 - Version 1.3 - Giacomo Galilei
+
+    * src/event.c
+      added a char in the 32th lines and fixed the paradisiac startup
+      error: now if battery percentage is at 100% (and no more at 10% !!)
+      when wmlaptop starts, ac_adapter is plugged in and paradisiac option
+      is enabled, cpu enter in the paradisiac mode
+    * src/cpu.c
+      cpuSetParadisiac has been improved to allow wmlaptop set the
+      paradisiac mode even when wmlaptop starts and we already be at 100%
+      battery percentage
+    * src/init.c src/init.h
+      added a function scalingGovernorHelper() which will be called when
+      wmlaptop uses the /sys/..'s way to set the cpu freq. Then it will
+      read from scaling_governor to check that the userspace governor is
+      running in the kernel. If not, it will try to make kernel run with
+      it
+    * src/event.c
+      sleeping time has been increased a little bit, to follow an user
+      suggestion, but I didn't increased it too much, becouse I don't
+      want to lose the accuracy in the cpu load showing.
+    * src/battery.c
+      I really haven't never test the APM support. I believe I've found
+      a bug while I was updating files. Now 'setNewBatteryState' is called
+      whenever APM_Update is called (just lisk ACPI_Update)
+    * src/main.c src/main.h
+      a new argument has been added: "-t". With this arg comes a new
+      function of wmlaptop: now it can show you battery and cpu information
+      even when in console: no X-connection is required.
+      Calling wmlaptop with -t option will make wmlaptop show you info
+      and exit
+    * Makefile
+      the useless call to 'gtk-config' has been removed
+    * .info
+      improved info help file
+
+08-03-2004 - Version 1.2  - Daniel Winkler, Giacomo Galilei
+
+	* src/main.c src/main.h src/argsConfig.h
+	  enabled a way to disable the 100% CPULOAD blinking at argsConfig.h
+	  it can be done also by passing '--dontblink' in the command line
+	* src/draw.c
+	  the "battery bar" can now be split, when 2 or more batteries are
+	  present. I tried it with my 2 slots, but it _could_ work for 3
+	  batteries, too, although I can hardly imagine how this could be
+	  (maybe with an 3rd external battery .. ?)
+	* src/battery.c
+	  bug solved at the remainig capacity percentage calculation:
+	  before we added the battery's percentages and divided it through the
+	  number. Unfortunately this only works if both batteries have the
+	  same capacity. Fixed
+	* src/battery.c
+	  in estimatedTimeClock() sometime happends that the difference 
+	  between the first and the last percentage relevation is 0 (reported
+	  only in some laptop), and this make wmlaptop quit with a "floating
+	  point exception" when it makes a division by this difference (which
+	  is just 0). Cannot say "fixed" here, becouse this behaviour is 
+	  just "patched": wmlaptop wont perform the division and the
+	  estimated remaining time will be set to 0.
+
+25-01-2004 - Version 1.1  - Giacomo Galilei
+
+	* src/battery.c:
+	  fixed a bug which display a dummy error in the free() call.
+	* src/event.c src/init.c
+	  now wmlaptop ask to Xserver the ButtonRelease event to handle
+	  the "right mouse button release": at this event is attached
+	  the screen saver start
+	* src/cpu.c
+	  added new function called setCpuParadisiac(): when the battery
+	  state is at 100% and the AC_Adapter is plugged in, wmlaptop thinks
+	  that there is no reason to keep the battery use low: wmlaptop will
+	  set the cpu to the maximum frequency. This behaviour can be set by
+	  user passing the arg --paradisiac=on|off
+	* src/battery.c
+	  changes to function ACPI_maxCapacity(): now is possible to use
+	  "last full capacity" tag instead of "design capacity" to read the
+	  maximum capacity of the battery (very usefull for old batteries).
+	  To use this tag, the user have to pass --lfc=N, where N is the
+	  number of battery. For this feature there have been added three more
+	  function: ACPI_lfcArgs_add() ACPI_lfcArgs_get() ACPI_lfcArgs_free()
+	* src/event.c src/battery.c
+	  substantial changes to the way wmlaptop updates the battery state.
+	  now every update is done each two seconds, and estimatedTimeClock()
+	  now estimates the remaining time to the full recharging too
+	* src/autoscript.c
+	  added this new file which comes with a lot of new feature: is now
+	  possibile to call shutdown when the battery is at very low (by 
+	  checkAutoShutdown(), and args like --auto-shutdown and
+	   --shutdown-delay) and to play speaker as alarm some time before (by 
+	  checkAutoAlarm() and args like --auto-alarm --alarm-type and
+	  --alarm-repeat). The alarm function comes with 4 different funny
+	  jingle :). Moreover when the alarm is playing the dockapp will flash
+	  "LOW BATTERY". To do this, wmlaptop fork() in two processes: the
+	  child	will play the speaker and the father will display "LOW BATTERY"
+	   until the child is alive (by startFlashingLowBattery() and
+	  stopFlashingLowBattery() ). Is also possible to listen a demo of the
+	  jingles by passing -p at the command line: wmlaptop will play the
+	  speaker and then will exit
+	* src/battery.c
+	  the "no present battery state" has been improved: now you can start 
+	  peacefuly wmlaptop even without any battery plugged in. Wmlaptop will
+	  remember that the battery is not present and will try to read
+	  information from the file each 2 seconds.
+
+08-01-2004 - Version 1.01 - Giacomo Galilei
+
+	* src/battery.c:
+	  not each directory in /proc/acpi/battery/ have to be considered
+	  as a laptop-battery's informations' directory; now battery.c knows
+	  it, and if it finds errors reading the capacity of a battery,
+	  wmlaptop won't exit, but it will continue to work skipping that data.
+	* src/main.c:
+	  added free_and_exit() which contain some free functions for
+	  every mallocated memory. Every time the program ends, this
+	  function will be called before (every 'exit( code );' has
+	  been changed in 'free_and_exit( code );'
+	* src/battery.c:
+	  the mallocation and freeing of memory for the battery-vector of
+	  powerState is now handled by mallocBatteryVector() and
+	  freeBatteryVector() functions.
+	* src/main.c src/main.h src/argsConfig.h
+	  added the argument '-q' '--quiet' to not display simple messages
+	  or warnings. (the errors remain displayed)

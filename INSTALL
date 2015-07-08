@@ -1,0 +1,52 @@
+INSTALLING:
+
+before typing 'make' you could want to open the Makefile and edit
+some installation and compilation option like INSTALLDIR or the C compiler
+
+/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+/*                 N O R M A L   I N S T A L L A T I O N               */
+/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+$ make
+$ su
+# make install
+
+
+/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+/* L O N G R U N   T R A N S M E T A   C P U   I N S T A L L A T I O N */
+/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+$ make -f Makefile.Longrun
+$ su
+# make install
+
+
+WARNING: the 'make install' script will suid the binary file (+s) to allow
+normal user to change the cpu's frequence
+
+READ CAREFULLY:
+wmlaptop from 1.1 can shutdown the system. To do this, wmlaptop call this
+command:
+$(SHUTDOWN_BIN) +time $(SHUTDOWN_ARGS)
+where 'time' is --shutdown-delay argument, and SHUTDOWN_BIN and SHUTDOWN_ARGS
+are defined in src/autoscript.h
+by default they are
+#define SHUTDOWN_BIN      "sudo /sbin/shutdown"
+#define SHUTDOWN_ARGS     "\"wmlaptop is shutting down the system\" -h"
+As you can see, /sbin/shutdown cannot be executed by normal user, not even if
+the binary is +s. Hence, if you are going to use wmlaptop as normal user (not
+root) you need some workaround, like use 'sudo' (this is the default behaviour
+of wmlaptop). To use "shutdown" with 'sudo' you have to append in /etc/sudoers
+this line:
+
+myusername ALL=(root) NOPASSWD: /sbin/shutdown
+
+where 'myusername' is your login name. If you do this, wmlaptop is free to
+shutdown properly the system. Anyway, you can redefine SHUTDOWN_BIN and
+SHUTDOWN_ARGS as you prefer (for example to change warning message or to use
+another normal user shutdown script)
+
+wmlaptop is now installed on your system!
+
+see README for more informations
+
