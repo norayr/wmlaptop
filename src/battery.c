@@ -74,7 +74,8 @@ void freeBatteryVector( int index )
 
 bool ACPI_canSupport( )
 {
-	if( access( ACPI_ACCESS_TEST, R_OK ) == SUCCESS )
+	//if( access( ACPI_ACCESS_TEST, R_OK ) == SUCCESS )
+	if( access( ACPI_ACCESS_TEST, R_OK | X_OK ) == SUCCESS )
 		return true;
 	return false;
 }
