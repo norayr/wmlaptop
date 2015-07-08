@@ -17,6 +17,9 @@
 #ifndef __ARGSCONFIG_H__
 #define __ARGSCONFIG_H__
 
+/* set the number of cpu's */
+#define NUMBER_OF_CPUS 2
+
 /* update frequency, in milliseconds; the value for battery MUST be
    greater than that for CPU */
 //#define ARGSDEF_CPUUPDATE              500

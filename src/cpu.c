@@ -134,7 +134,8 @@ void cpuReadFreq( )
 	FILE * fp;
 	char red[10];
 	
-	if( (fp = fopen( cpuState.setFreqFile, "r" )) == NULL )
+	//if( (fp = fopen( cpuState.setFreqFile, "r" )) == NULL )
+	if( (fp = fopen( cpuState.setFreqFile[0], "r" )) == NULL )
 	{
 		fprintf(stderr, "Error reading the info file (%s):\n%s\n", cpuState.setFreqFile, strerror(errno) );
 		free_and_exit( ERROR );
